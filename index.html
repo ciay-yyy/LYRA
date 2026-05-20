@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LYRA — By SP Students</title>
+<link href="https://fonts.googleapis.com/css2?family=Times+New+Roman&family=UnifrakturMaguntia&family=Abril+Fatface&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ─── LAZY DOG font simulation via @font-face fallback ─── */
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+  --red: #C8181E;
+  --red-deep: #8B0000;
+  --red-light: #E84040;
+  --cream: #FAF4E8;
+  --cream-dark: #F0E6C8;
+  --cream-deep: #E0CFA0;
+  --text-dark: #100500;
+  --text-mid: #4A2000;
+  --white: #FFFFFF;
+  --shadow: rgba(200,24,30,0.2);
+  --gold: #BFA060;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--cream);
+  color:var(--text-dark);
+  font-family:'Times New Roman',Times,serif;
+  overflow-x:hidden;
+  min-height:100vh;
+  cursor:none;
+}
+
+/* ── CURSOR ── */
+#cursor{
+  position:fixed;width:18px;height:18px;
+  pointer-events:none;z-index:99999;
+  transform:translate(-50%,-50%);
+  transition:transform 0.1s;
+}
+#cursor svg{width:100%;height:100%;}
+#cursor-trail{
+  position:fixed;width:8px;height:8px;border-radius:50%;
+  background:var(--red);pointer-events:none;z-index:99998;
+  transform:translate(-50%,-50%);
+  transition:all 0.18s ease;
+  opacity:0.5;
+}
+
+/* ── CANVAS ── */
+#star-canvas{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+}
+
+/* ── GRAPHIC ELEMENTS overlay SVGs ── */
+.graphic-el{
+  position:fixed;pointer-events:none;z-index:1;
+  opacity:0.12;
+}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:1000;
+  background:rgba(250,244,232,0.93);
+  backdrop-filter:blur(16px);
+  border-bottom:2px solid var(--cream-deep);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2.5rem;height:72px;
+  box-shadow:0 2px 20px var(--shadow);
+}
+
+.nav-logo{
+  font-family:'Bungee',sans-serif;
+  font-size:2.1rem;font-weight:400;
+  letter-spacing:0.08em;color:var(--red);
+  text-shadow:2px 2px 0 rgba(200,24,30,0.15);
+  cursor:pointer;user-select:none;
+  position:relative;
+}
+.nav-logo::after{
+  content:'★';font-size:0.55rem;
+  vertical-align:super;margin-left:2px;color:var(--gold);
+}
+
+.nav-links{display:flex;gap:1.8rem;list-style:none;}
+.nav-links a{
+  text-decoration:none;color:var(--text-mid);
+  font-family:'Times New Roman',Times,serif;
+  font-size:0.85rem;letter-spacing:0.1em;
+  text-transform:uppercase;font-weight:400;
+  transition:color 0.2s;cursor:pointer;
+}
+.nav-links a:hover,.nav-links a.active{color:var(--red);}
+
+.nav-actions{display:flex;align-items:center;gap:1rem;}
+
+.nav-btn{
+  background:none;border:none;cursor:pointer;
+  color:var(--text-mid);font-size:1.2rem;position:relative;
+  transition:color 0.2s;padding:4px;
+  font-family:'Times New Roman',Times,serif;
+}
+.nav-btn:hover{color:var(--red);}
+.badge{
+  position:absolute;top:-4px;right:-6px;
+  background:var(--red);color:#fff;
+  font-size:0.58rem;font-weight:700;
+  width:16px;height:16px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DM Sans',sans-serif;
+}
+
+#lang-select{
+  background:var(--cream-dark);border:1.5px solid var(--cream-deep);
+  color:var(--text-mid);font-size:0.75rem;
+  border-radius:6px;padding:4px 8px;cursor:pointer;
+  outline:none;font-family:'Times New Roman',Times,serif;
+}
+#lang-select:focus{border-color:var(--red);}
+
+.login-nav-btn{
+  background:var(--red);color:#fff;border:none;
+  border-radius:4px;padding:7px 18px;
+  font-size:0.82rem;font-weight:600;cursor:pointer;
+  letter-spacing:0.06em;
+  transition:background 0.2s;
+  font-family:'Times New Roman',Times,serif;
+  text-transform:uppercase;
+}
+.login-nav-btn:hover{background:var(--red-deep);}
+
+/* ── HERO ── */
+.hero{
+  position:relative;z-index:2;
+  min-height:90vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:4rem 2rem;
+  overflow:hidden;
+}
+
+.hero-bg-text{
+  position:absolute;
+  font-family:'Bungee',sans-serif;
+  font-size:clamp(8rem,22vw,20rem);
+  color:rgba(200,24,30,0.04);
+  letter-spacing:-0.02em;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  white-space:nowrap;
+  pointer-events:none;
+  user-select:none;
+  z-index:0;
+}
+
+.hero-sub{
+  font-family:'Times New Roman',Times,serif;
+  font-size:0.72rem;letter-spacing:0.35em;
+  text-transform:uppercase;color:var(--red);
+  font-weight:400;margin-bottom:1.2rem;
+  position:relative;z-index:1;
+}
+.hero-sub::before,.hero-sub::after{
+  content:'✦';margin:0 0.7rem;font-size:0.6rem;
+}
+
+.hero-title{
+  font-family:'Bungee',sans-serif;
+  font-size:clamp(5rem,16vw,13rem);
+  color:var(--red);line-height:0.9;
+  text-shadow:3px 3px 0 rgba(200,24,30,0.12);
+  margin-bottom:0.5rem;
+  position:relative;z-index:1;
+  letter-spacing:0.05em;
+}
+
+.hero-tagline{
+  font-family:'Playfair Display',serif;
+  font-style:italic;font-size:1.2rem;
+  color:var(--text-mid);margin-bottom:2.5rem;
+  position:relative;z-index:1;
+  letter-spacing:0.04em;
+}
+
+.hero-stats{
+  display:flex;gap:3rem;margin-bottom:2.5rem;
+  position:relative;z-index:1;
+}
+.hero-stat{text-align:center;}
+.hero-stat-num{
+  font-family:'Bungee',sans-serif;
+  font-size:2rem;color:var(--red);display:block;
+  line-height:1;
+}
+.hero-stat-label{
+  font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--text-mid);font-family:'Times New Roman',serif;
+}
+
+.hero-cta{
+  background:var(--red);color:#fff;border:none;
+  border-radius:0;padding:14px 50px;
+  font-family:'Times New Roman',Times,serif;
+  font-size:0.88rem;font-weight:400;
+  letter-spacing:0.18em;text-transform:uppercase;
+  cursor:pointer;
+  box-shadow:4px 4px 0 var(--red-deep);
+  transition:transform 0.15s,box-shadow 0.15s;
+  position:relative;z-index:1;
+}
+.hero-cta:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--red-deep);}
+
+/* Floating graphic deco in hero */
+.hero-deco{
+  position:absolute;pointer-events:none;
+  opacity:0.18;z-index:0;
+}
+
+/* ── MARQUEE TICKER ── */
+.ticker{
+  position:relative;z-index:2;
+  background:var(--red);overflow:hidden;
+  padding:10px 0;border-top:2px solid var(--red-deep);
+  border-bottom:2px solid var(--red-deep);
+}
+.ticker-inner{
+  display:flex;white-space:nowrap;
+  animation:ticker-run 22s linear infinite;
+}
+.ticker-item{
+  font-family:'Times New Roman',Times,serif;
+  font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
+  color:#fff;padding:0 2.5rem;
+  display:flex;align-items:center;gap:1rem;
+}
+.ticker-item::after{content:'✦';opacity:0.7;}
+@keyframes ticker-run{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+/* ── SECTION ── */
+.section-header{
+  text-align:center;padding:3rem 2rem 1.2rem;
+  position:relative;z-index:2;
+}
+.section-label{
+  font-size:0.68rem;letter-spacing:0.32em;text-transform:uppercase;
+  color:var(--red);font-family:'Times New Roman',serif;
+  margin-bottom:0.5rem;display:block;
+}
+.section-label::before,.section-label::after{content:'── ';opacity:0.5;}
+.section-title{
+  font-family:'Playfair Display',serif;
+  font-size:2.4rem;font-weight:700;color:var(--text-dark);
+  margin-bottom:0.5rem;
+}
+.section-line{
+  width:50px;height:2px;background:var(--red);
+  margin:0.8rem auto 0;
+}
+
+/* ── MASONRY ── */
+.masonry-grid{
+  position:relative;z-index:2;
+  columns:4 250px;column-gap:1.1rem;
+  padding:1.5rem 2.5rem 3rem;
+  max-width:1440px;margin:0 auto;
+}
+
+.product-card{
+  break-inside:avoid;margin-bottom:1.1rem;
+  background:var(--white);
+  border:1.5px solid var(--cream-deep);
+  overflow:hidden;
+  box-shadow:3px 3px 0 var(--cream-deep);
+  transition:transform 0.2s,box-shadow 0.2s;
+  cursor:pointer;
+  position:relative;
+}
+.product-card:hover{
+  transform:translate(-3px,-3px);
+  box-shadow:6px 6px 0 var(--red);
+  border-color:var(--red);
+}
+
+/* T-shirt visual render */
+.tshirt-preview{
+  width:100%;background:var(--cream-dark);
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  padding:1.5rem;
+}
+
+.tshirt-svg{
+  width:100%;max-width:200px;
+  filter:drop-shadow(2px 4px 8px rgba(0,0,0,0.12));
+}
+
+.product-info{padding:1rem 1.1rem 1.2rem;}
+.product-tag{
+  font-size:0.64rem;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--red);font-family:'Times New Roman',serif;margin-bottom:4px;
+}
+.product-name{
+  font-family:'Playfair Display',serif;font-size:1rem;
+  font-weight:700;color:var(--text-dark);margin-bottom:4px;line-height:1.3;
+}
+.product-sub{
+  font-size:0.78rem;color:var(--text-mid);margin-bottom:8px;
+  font-family:'Times New Roman',serif;font-style:italic;
+}
+.product-price{
+  font-family:'Bungee',sans-serif;font-size:1rem;
+  color:var(--red);margin-bottom:10px;letter-spacing:0.04em;
+}
+
+.color-dots{display:flex;gap:6px;margin-bottom:10px;}
+.color-dot{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid rgba(0,0,0,0.12);cursor:pointer;
+  transition:transform 0.15s;
+}
+.color-dot:hover{transform:scale(1.25);}
+.color-dot.active{border-color:var(--red);transform:scale(1.2);}
+
+.product-actions{display:flex;gap:8px;}
+.btn-cart{
+  flex:1;background:var(--red);color:#fff;border:none;
+  padding:9px 12px;font-size:0.76rem;font-weight:400;
+  cursor:pointer;transition:background 0.2s;
+  font-family:'Times New Roman',Times,serif;
+  letter-spacing:0.1em;text-transform:uppercase;
+}
+.btn-cart:hover{background:var(--red-deep);}
+.btn-wish{
+  background:var(--cream-dark);border:1.5px solid var(--cream-deep);
+  color:var(--red);padding:9px 10px;font-size:0.9rem;
+  cursor:pointer;transition:background 0.2s,border-color 0.2s;
+}
+.btn-wish:hover,.btn-wish.wishlisted{background:#ffe0e0;border-color:var(--red);}
+
+/* ── COLLAB SECTION ── */
+.collab-section{
+  position:relative;z-index:2;
+  background:var(--text-dark);
+  padding:4rem 2.5rem;
+  overflow:hidden;
+}
+.collab-inner{
+  max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:4rem;align-items:center;
+}
+.collab-label{
+  font-size:0.68rem;letter-spacing:0.32em;text-transform:uppercase;
+  color:var(--red-light);margin-bottom:1rem;display:block;
+  font-family:'Times New Roman',serif;
+}
+.collab-title{
+  font-family:'Bungee',sans-serif;font-size:2.8rem;
+  color:var(--cream);line-height:1;margin-bottom:1.2rem;
+  letter-spacing:0.03em;
+}
+.collab-title span{color:var(--red-light);}
+.collab-body{
+  font-family:'Times New Roman',Times,serif;
+  font-size:0.95rem;line-height:1.85;color:#c9b08a;
+  margin-bottom:1.5rem;
+}
+.collab-specs{
+  display:flex;flex-direction:column;gap:0.7rem;
+}
+.collab-spec{
+  display:flex;align-items:flex-start;gap:0.8rem;
+  font-family:'Times New Roman',serif;font-size:0.88rem;color:#c9b08a;
+}
+.collab-spec-icon{color:var(--red-light);font-size:1rem;margin-top:1px;flex-shrink:0;}
+.collab-spec strong{color:var(--cream);display:block;font-size:0.82rem;letter-spacing:0.08em;margin-bottom:1px;text-transform:uppercase;}
+
+.collab-visual{
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+.collab-box{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:0;
+  padding:2.5rem;
+  text-align:center;
+  position:relative;
+}
+.collab-logo{
+  font-family:'Bungee',sans-serif;
+  font-size:1.8rem;color:var(--cream);
+  margin-bottom:0.5rem;
+  letter-spacing:0.08em;
+}
+.collab-logo span{
+  display:block;font-family:'Times New Roman',serif;
+  font-size:0.72rem;letter-spacing:0.28em;text-transform:uppercase;
+  color:#c9b08a;font-weight:400;margin-top:4px;
+}
+.collab-tag{
+  background:var(--red);color:#fff;
+  font-size:0.68rem;letter-spacing:0.15em;text-transform:uppercase;
+  padding:5px 14px;display:inline-block;margin-top:1rem;
+  font-family:'Times New Roman',serif;
+}
+
+/* ── ABOUT / CONTACT ── */
+.page-inner{max-width:960px;margin:0 auto;padding:2rem 2.5rem 4rem;position:relative;z-index:2;}
+
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2rem;}
+.about-card{
+  background:var(--white);border:1.5px solid var(--cream-deep);
+  padding:2rem;box-shadow:3px 3px 0 var(--cream-deep);
+  transition:box-shadow 0.2s,transform 0.2s;
+}
+.about-card:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--red);border-color:var(--red);}
+.about-card-icon{font-size:2rem;margin-bottom:1rem;}
+.about-card h3{
+  font-family:'Playfair Display',serif;font-size:1.1rem;
+  font-weight:700;color:var(--text-dark);margin-bottom:0.6rem;
+}
+.about-card p{font-family:'Times New Roman',serif;font-size:0.9rem;color:var(--text-mid);line-height:1.75;}
+
+.contact-form{display:flex;flex-direction:column;gap:1rem;margin-top:2rem;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group label{
+  font-size:0.72rem;font-weight:400;color:var(--text-mid);
+  letter-spacing:0.14em;text-transform:uppercase;
+  font-family:'Times New Roman',serif;
+}
+.form-input{
+  border:1.5px solid var(--cream-deep);
+  padding:11px 14px;font-size:0.9rem;
+  font-family:'Times New Roman',Times,serif;color:var(--text-dark);
+  background:var(--cream);outline:none;
+  transition:border-color 0.2s;border-radius:0;
+}
+.form-input:focus{border-color:var(--red);}
+textarea.form-input{resize:vertical;min-height:110px;}
+
+.contact-info-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1rem;margin-top:2rem;
+}
+.contact-info-card{
+  text-align:center;background:var(--white);
+  border:1.5px solid var(--cream-deep);padding:1.5rem 1rem;
+  box-shadow:3px 3px 0 var(--cream-deep);
+}
+.contact-info-card .icon{font-size:1.6rem;margin-bottom:0.6rem;}
+.contact-info-card h4{
+  font-family:'Playfair Display',serif;
+  font-size:0.9rem;font-weight:700;color:var(--text-dark);margin-bottom:4px;
+}
+.contact-info-card p{font-size:0.8rem;color:var(--text-mid);font-family:'Times New Roman',serif;}
+
+/* ── CATALOGUE FILTERS ── */
+.cat-filters{display:flex;gap:0.6rem;flex-wrap:wrap;margin:1.2rem 0 0.5rem;padding:0 2.5rem;}
+.cat-filter-btn{
+  background:var(--cream-dark);border:1.5px solid var(--cream-deep);
+  padding:6px 18px;font-size:0.76rem;font-weight:400;
+  cursor:pointer;transition:all 0.2s;
+  font-family:'Times New Roman',Times,serif;
+  color:var(--text-mid);letter-spacing:0.1em;text-transform:uppercase;
+  border-radius:0;
+}
+.cat-filter-btn.active,.cat-filter-btn:hover{
+  background:var(--red);border-color:var(--red);color:#fff;
+}
+
+/* ── MODALS ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(10,3,0,0.65);
+  backdrop-filter:blur(8px);z-index:2000;
+  align-items:center;justify-content:center;padding:1.5rem;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--white);max-width:540px;width:100%;
+  max-height:88vh;overflow-y:auto;
+  box-shadow:8px 8px 0 var(--red-deep);
+  border:2px solid var(--text-dark);
+  animation:modalIn 0.3s ease;
+}
+@keyframes modalIn{from{transform:scale(0.95) translateY(12px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+.modal-wide{max-width:800px;}
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.2rem 1.6rem;
+  border-bottom:2px solid var(--text-dark);
+  background:var(--text-dark);
+}
+.modal-title{
+  font-family:'Bungee',sans-serif;font-size:1.1rem;
+  color:var(--cream);letter-spacing:0.06em;
+}
+.modal-close{
+  background:none;border:none;font-size:1.3rem;
+  cursor:pointer;color:var(--cream);line-height:1;padding:2px 8px;
+  transition:color 0.2s;
+}
+.modal-close:hover{color:var(--red-light);}
+.modal-body{padding:1.6rem;}
+
+/* Cart items */
+.cart-item{
+  display:flex;gap:1rem;padding:1rem 0;
+  border-bottom:1px solid var(--cream-deep);align-items:center;
+}
+.cart-item:last-child{border-bottom:none;}
+.cart-item-emoji{
+  font-size:2rem;background:var(--cream-dark);
+  width:52px;height:52px;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;border:1px solid var(--cream-deep);
+}
+.cart-item-info{flex:1;}
+.cart-item-name{font-weight:700;font-size:0.9rem;color:var(--text-dark);font-family:'Playfair Display',serif;}
+.cart-item-price{font-size:0.85rem;color:var(--red);font-weight:700;margin-top:2px;font-family:'Bungee',sans-serif;font-size:0.9rem;}
+.cart-item-sub{font-size:0.75rem;color:var(--text-mid);font-family:'Times New Roman',serif;font-style:italic;}
+
+.cart-item-qty{display:flex;align-items:center;gap:8px;}
+.qty-btn{
+  background:var(--cream-dark);border:1px solid var(--cream-deep);
+  width:26px;height:26px;cursor:pointer;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-dark);transition:background 0.15s;
+  font-family:'Times New Roman',serif;
+}
+.qty-btn:hover{background:var(--cream-deep);}
+.qty-num{font-weight:700;font-size:0.9rem;min-width:20px;text-align:center;font-family:'Times New Roman',serif;}
+
+.cart-total{
+  margin-top:1.2rem;padding-top:1rem;
+  border-top:2px solid var(--text-dark);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.cart-total-label{font-family:'Times New Roman',serif;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;}
+.cart-total-price{font-family:'Bungee',sans-serif;font-size:1.3rem;color:var(--red);}
+
+.btn-checkout{
+  width:100%;margin-top:1rem;background:var(--red);color:#fff;
+  border:none;padding:13px;font-size:0.88rem;font-weight:400;
+  cursor:pointer;transition:background 0.2s;
+  font-family:'Times New Roman',Times,serif;letter-spacing:0.15em;text-transform:uppercase;
+}
+.btn-checkout:hover{background:var(--red-deep);}
+
+/* Login */
+.login-form{display:flex;flex-direction:column;gap:1rem;}
+.btn-login{
+  background:var(--red);color:#fff;border:none;padding:13px;
+  font-size:0.88rem;font-weight:400;cursor:pointer;margin-top:4px;
+  transition:background 0.2s;
+  font-family:'Times New Roman',Times,serif;letter-spacing:0.1em;text-transform:uppercase;
+}
+.btn-login:hover{background:var(--red-deep);}
+.login-switch{text-align:center;font-size:0.85rem;color:var(--text-mid);margin-top:8px;font-family:'Times New Roman',serif;}
+.login-switch span{color:var(--red);cursor:pointer;text-decoration:underline;}
+.login-error{
+  background:#ffe5e5;border:1px solid #ffb3b3;
+  padding:10px 14px;font-size:0.85rem;color:var(--red-deep);display:none;
+  font-family:'Times New Roman',serif;
+}
+
+/* Orders */
+.order-card{
+  border:1.5px solid var(--cream-deep);padding:1.2rem;
+  margin-bottom:1rem;background:var(--cream);
+}
+.order-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem;flex-wrap:wrap;gap:8px;}
+.order-id{font-family:'Bungee',sans-serif;font-size:0.88rem;color:var(--text-dark);}
+.order-date{font-size:0.78rem;color:var(--text-mid);font-family:'Times New Roman',serif;}
+.order-status{
+  font-size:0.68rem;font-family:'Times New Roman',serif;
+  letter-spacing:0.1em;text-transform:uppercase;padding:4px 10px;border:1.5px solid;
+}
+.status-delivered{border-color:#1a7a1a;color:#1a7a1a;}
+.status-shipped{border-color:#856404;color:#856404;}
+.status-processing{border-color:var(--red-deep);color:var(--red-deep);}
+.order-items{font-size:0.85rem;color:var(--text-mid);margin-bottom:6px;font-family:'Times New Roman',serif;}
+.order-total{font-family:'Bungee',sans-serif;color:var(--red);font-size:0.95rem;}
+
+/* Empty state */
+.empty-state{text-align:center;padding:2.5rem;color:var(--text-mid);}
+.empty-state .empty-icon{font-size:2.8rem;margin-bottom:0.8rem;}
+.empty-state p{font-family:'Times New Roman',serif;font-size:0.95rem;}
+
+/* ── FOOTER ── */
+footer{
+  position:relative;z-index:2;
+  background:var(--text-dark);color:var(--cream);
+  padding:3.5rem 2.5rem 2rem;
+  border-top:3px solid var(--red);
+}
+.footer-grid{
+  display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr;
+  gap:2.5rem;max-width:1200px;margin:0 auto 2.5rem;
+}
+.footer-logo{
+  font-family:'Bungee',sans-serif;font-size:2rem;
+  color:var(--red-light);margin-bottom:0.8rem;letter-spacing:0.06em;
+}
+.footer-desc{font-size:0.85rem;color:#c9b08a;line-height:1.8;font-family:'Times New Roman',serif;}
+.footer-col h4{
+  font-size:0.68rem;letter-spacing:0.25em;text-transform:uppercase;
+  color:var(--red-light);margin-bottom:1rem;font-family:'Times New Roman',serif;
+}
+.footer-col ul{list-style:none;}
+.footer-col ul li{margin-bottom:0.5rem;}
+.footer-col ul li a{
+  text-decoration:none;color:#c9b08a;
+  font-size:0.85rem;transition:color 0.2s;cursor:pointer;
+  font-family:'Times New Roman',serif;
+}
+.footer-col ul li a:hover{color:var(--cream);}
+.footer-bottom{
+  max-width:1200px;margin:0 auto;
+  padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.08);
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:0.76rem;color:#6a5040;flex-wrap:wrap;gap:8px;
+  font-family:'Times New Roman',serif;
+}
+
+/* Toast */
+#toast{
+  position:fixed;bottom:2rem;left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--text-dark);color:var(--cream);
+  padding:11px 26px;font-size:0.85rem;
+  font-family:'Times New Roman',serif;letter-spacing:0.08em;
+  z-index:9999;transition:transform 0.35s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;white-space:nowrap;
+  border-left:3px solid var(--red);
+  box-shadow:4px 4px 0 rgba(0,0,0,0.3);
+}
+#toast.show{transform:translateX(-50%) translateY(0);}
+
+/* Page sections */
+.page-section{display:none;}
+.page-section.active{display:block;}
+#page-home{display:block;}
+
+/* Section divider */
+.section-divider{height:2px;background:linear-gradient(90deg,transparent,var(--cream-deep),transparent);margin:0 2.5rem;position:relative;z-index:2;}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--cream);}
+::-webkit-scrollbar-thumb{background:var(--red);}
+
+/* Responsive */
+@media(max-width:900px){
+  .masonry-grid{columns:2 200px;padding:1rem 1.2rem 2rem;}
+  .footer-grid{grid-template-columns:1fr 1fr;}
+  .about-grid{grid-template-columns:1fr;}
+  .contact-info-grid{grid-template-columns:1fr;}
+  .form-row{grid-template-columns:1fr;}
+  nav{padding:0 1.2rem;}
+  .nav-links{gap:1rem;}
+  .collab-inner{grid-template-columns:1fr;}
+}
+@media(max-width:600px){
+  .masonry-grid{columns:1;}
+  .footer-grid{grid-template-columns:1fr;}
+  .nav-links{display:none;}
+}
+
+/* ── INTERACTIVE STAR CLICK ── */
+.star-burst{
+  position:fixed;pointer-events:none;z-index:9998;
+  animation:star-burst-anim 0.6s forwards;
+  font-size:1.2rem;
+}
+@keyframes star-burst-anim{
+  0%{opacity:1;transform:scale(0.5);}
+  50%{opacity:1;transform:scale(1.5);}
+  100%{opacity:0;transform:scale(2) translateY(-20px);}
+}
+</style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div id="cursor">
+  <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 1 L11.9 7.1 L18.5 7.1 L13.3 10.9 L15.2 17 L10 13.2 L4.8 17 L6.7 10.9 L1.5 7.1 L8.1 7.1 Z" fill="#C8181E" stroke="#8B0000" stroke-width="0.5"/>
+  </svg>
+</div>
+<div id="cursor-trail"></div>
+
+<!-- Star canvas -->
+<canvas id="star-canvas"></canvas>
+
+<!-- Floating graphic elements from mood board -->
+<svg class="graphic-el" style="top:8%;right:3%;width:120px;opacity:0.1;" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Globe grid -->
+  <ellipse cx="100" cy="100" rx="90" ry="90" fill="none" stroke="#C8181E" stroke-width="1.5"/>
+  <ellipse cx="100" cy="100" rx="60" ry="90" fill="none" stroke="#C8181E" stroke-width="1"/>
+  <ellipse cx="100" cy="100" rx="20" ry="90" fill="none" stroke="#C8181E" stroke-width="1"/>
+  <line x1="10" y1="100" x2="190" y2="100" stroke="#C8181E" stroke-width="1"/>
+  <line x1="100" y1="10" x2="100" y2="190" stroke="#C8181E" stroke-width="1"/>
+  <ellipse cx="100" cy="100" rx="90" ry="30" fill="none" stroke="#C8181E" stroke-width="1"/>
+  <ellipse cx="100" cy="100" rx="90" ry="60" fill="none" stroke="#C8181E" stroke-width="1"/>
+</svg>
+
+<svg class="graphic-el" style="bottom:15%;left:2%;width:100px;opacity:0.08;" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- 4-point star -->
+  <path d="M75 5 L82 68 L145 75 L82 82 L75 145 L68 82 L5 75 L68 68 Z" fill="#C8181E"/>
+</svg>
+
+<svg class="graphic-el" style="top:45%;right:1%;width:80px;opacity:0.07;" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Spiral rings -->
+  <ellipse cx="100" cy="30" rx="95" ry="22" fill="none" stroke="#C8181E" stroke-width="1.5"/>
+  <ellipse cx="100" cy="30" rx="70" ry="16" fill="none" stroke="#C8181E" stroke-width="1"/>
+  <ellipse cx="100" cy="30" rx="45" ry="10" fill="none" stroke="#C8181E" stroke-width="1"/>
+</svg>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">LYRA</div>
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')" id="nav-home" class="active" data-i18n="nav-home">Home</a></li>
+    <li><a onclick="showPage('catalogue')" id="nav-catalogue" data-i18n="nav-cat">Catalogue</a></li>
+    <li><a onclick="showPage('about')" id="nav-about" data-i18n="nav-about">About Us</a></li>
+    <li><a onclick="showPage('contact')" id="nav-contact" data-i18n="nav-contact">Contact</a></li>
+    <li><a onclick="openOrders()" id="nav-orders" data-i18n="nav-orders">My Orders</a></li>
+  </ul>
+  <div class="nav-actions">
+    <select id="lang-select" onchange="setLanguage(this.value)">
+      <option value="en">🇬🇧 EN</option>
+      <option value="zh">🇨🇳 中文</option>
+      <option value="ms">🇲🇾 BM</option>
+      <option value="ta">🇮🇳 தமிழ்</option>
+      <option value="fr">🇫🇷 FR</option>
+      <option value="es">🇪🇸 ES</option>
+      <option value="de">🇩🇪 DE</option>
+      <option value="ru">🇷🇺 RU</option>
+    </select>
+    <button class="nav-btn" onclick="openWishlist()" title="Wishlist">
+      🤍<span class="badge" id="wish-badge" style="display:none">0</span>
+    </button>
+    <button class="nav-btn" onclick="openCart()" title="Cart">
+      🛒<span class="badge" id="cart-badge" style="display:none">0</span>
+    </button>
+    <button class="login-nav-btn" id="login-nav-btn" onclick="openLogin()" data-i18n="login-title">Sign In</button>
+  </div>
+</nav>
+
+<!-- ══════════ HOME PAGE ══════════ -->
+<div id="page-home" class="page-section active">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg-text">LYRA</div>
+
+    <!-- Rotating ring deco -->
+    <svg class="hero-deco" style="top:10%;left:5%;width:160px;" viewBox="0 0 200 200">
+      <ellipse cx="100" cy="100" rx="90" ry="30" fill="none" stroke="#C8181E" stroke-width="1.5" transform="rotate(-30 100 100)"/>
+      <ellipse cx="100" cy="100" rx="90" ry="30" fill="none" stroke="#C8181E" stroke-width="1" transform="rotate(20 100 100)"/>
+    </svg>
+
+    <!-- 4-point star deco top right -->
+    <svg class="hero-deco" style="top:8%;right:8%;width:60px;" viewBox="0 0 100 100">
+      <path d="M50 2 L54 46 L98 50 L54 54 L50 98 L46 54 L2 50 L46 46 Z" fill="#C8181E"/>
+    </svg>
+    <!-- Burst lines deco bottom left -->
+    <svg class="hero-deco" style="bottom:10%;left:8%;width:90px;" viewBox="0 0 100 100">
+      <g transform="translate(50,50)">
+        <line x1="0" y1="-45" x2="0" y2="45" stroke="#C8181E" stroke-width="1"/>
+        <line x1="-45" y1="0" x2="45" y2="0" stroke="#C8181E" stroke-width="1"/>
+        <line x1="-32" y1="-32" x2="32" y2="32" stroke="#C8181E" stroke-width="1"/>
+        <line x1="32" y1="-32" x2="-32" y2="32" stroke="#C8181E" stroke-width="1"/>
+        <line x1="-45" y1="-18" x2="45" y2="18" stroke="#C8181E" stroke-width="0.7"/>
+        <line x1="18" y1="-45" x2="-18" y2="45" stroke="#C8181E" stroke-width="0.7"/>
+        <line x1="45" y1="-18" x2="-45" y2="18" stroke="#C8181E" stroke-width="0.7"/>
+        <line x1="-18" y1="-45" x2="18" y2="45" stroke="#C8181E" stroke-width="0.7"/>
+      </g>
+    </svg>
+
+    <p class="hero-sub" data-i18n="hero-sub">Singapore Polytechnic · Year 1 Collection</p>
+    <h1 class="hero-title">LYRA</h1>
+    <p class="hero-tagline" data-i18n="hero-tagline">Wear the Stars. Rise Above.</p>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-num">5+</span>
+        <span class="hero-stat-label" data-i18n="stat-designs">Designs</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">4</span>
+        <span class="hero-stat-label" data-i18n="stat-colors">Colourways</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">DTF</span>
+        <span class="hero-stat-label" data-i18n="stat-print">Print Tech</span>
+      </div>
+    </div>
+
+    <button class="hero-cta" onclick="showPage('catalogue')" data-i18n="hero-cta">Shop Now ///</button>
+  </section>
+
+  <!-- Ticker -->
+  <div class="ticker">
+    <div class="ticker-inner" id="ticker-inner"></div>
+  </div>
+
+  <!-- Featured -->
+  <div class="section-header">
+    <span class="section-label" data-i18n="featured-label">New Arrivals</span>
+    <h2 class="section-title" data-i18n="featured-title">Featured Pieces</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="masonry-grid" id="featured-grid"></div>
+
+  <div class="section-divider"></div>
+
+  <!-- Collab Section -->
+  <section class="collab-section">
+    <div class="collab-inner">
+      <div>
+        <span class="collab-label">✦ Official Production Partner</span>
+        <h2 class="collab-title">Made with<br><span>Orange Box</span><br>Singapore</h2>
+        <p class="collab-body">
+          LYRA is proud to collaborate with <strong style="color:var(--cream)">Singapore Orange Box</strong>, one of Singapore's most trusted custom apparel and merchandise producers. Based right here in Singapore, Orange Box specialises in high-quality DTF (Direct-to-Film) printing, delivering vivid, long-lasting graphics on a wide range of garment types.
+          <br><br>
+          Their state-of-the-art printing technology ensures that every detail of our student-designed graphics — from the holographic star motifs to the bold "Rise Above" typography — is reproduced with exceptional colour accuracy and durability wash after wash.
+        </p>
+        <div class="collab-specs">
+          <div class="collab-spec">
+            <span class="collab-spec-icon">👕</span>
+            <div><strong>Material</strong>100% Dri-Fit Polyester — lightweight, breathable & moisture-wicking</div>
+          </div>
+          <div class="collab-spec">
+            <span class="collab-spec-icon">🖨️</span>
+            <div><strong>Print Method</strong>DTF (Direct-to-Film) — premium full-colour, wash-resistant print</div>
+          </div>
+          <div class="collab-spec">
+            <span class="collab-spec-icon">📍</span>
+            <div><strong>Made in Singapore</strong>Produced locally by Singapore Orange Box</div>
+          </div>
+          <div class="collab-spec">
+            <span class="collab-spec-icon">✦</span>
+            <div><strong>Price</strong>SGD $20 per tee — affordable student fashion, premium quality</div>
+          </div>
+        </div>
+      </div>
+      <div class="collab-visual">
+        <div class="collab-box">
+          <div style="font-size:3.5rem;margin-bottom:0.5rem;">🟠</div>
+          <div class="collab-logo">ORANGE BOX<span>Singapore · Custom Apparel</span></div>
+          <div class="collab-tag">Official LYRA Partner</div>
+          <div style="margin-top:1.5rem;border-top:1px solid rgba(255,255,255,0.1);padding-top:1.2rem;">
+            <div style="font-size:0.75rem;color:#c9b08a;font-family:'Times New Roman',serif;line-height:1.7;">
+              "We help student creators and businesses bring their designs to life with professional-grade printing and uncompromising quality."
+            </div>
+            <div style="font-size:0.68rem;color:#6a5040;font-family:'Times New Roman',serif;margin-top:0.5rem;letter-spacing:0.12em;text-transform:uppercase;">— Singapore Orange Box</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ══════════ CATALOGUE PAGE ══════════ -->
+<div id="page-catalogue" class="page-section">
+  <div class="section-header">
+    <span class="section-label" data-i18n="cat-label">Our Collection</span>
+    <h2 class="section-title" data-i18n="cat-title">Full Catalogue</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="cat-filters">
+    <button class="cat-filter-btn active" onclick="filterCat('all',this)" data-i18n="filter-all">All Designs</button>
+    <button class="cat-filter-btn" onclick="filterCat('white',this)">White</button>
+    <button class="cat-filter-btn" onclick="filterCat('black',this)">Black</button>
+    <button class="cat-filter-btn" onclick="filterCat('navy',this)">Navy</button>
+    <button class="cat-filter-btn" onclick="filterCat('holographic',this)">Holographic Stars</button>
+    <button class="cat-filter-btn" onclick="filterCat('rise',this)">Rise Above</button>
+    <button class="cat-filter-btn" onclick="filterCat('love',this)">Love</button>
+  </div>
+  <div class="masonry-grid" id="catalogue-grid"></div>
+</div>
+
+<!-- ══════════ ABOUT PAGE ══════════ -->
+<div id="page-about" class="page-section">
+  <div class="section-header">
+    <span class="section-label" data-i18n="about-label">Who We Are</span>
+    <h2 class="section-title" data-i18n="about-title">About LYRA</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="page-inner" style="padding-top:0">
+    <p style="text-align:center;font-family:'Playfair Display',serif;font-style:italic;font-size:1.05rem;color:var(--text-mid);line-height:1.85;margin-bottom:2.5rem;" data-i18n="about-desc">
+      LYRA is a student-led fashion label born at Singapore Polytechnic, created by passionate Year 1 students who believe that style is a language everyone speaks. Named after the brightest star constellation, LYRA represents the intersection of creativity, culture, and contemporary fashion.
+    </p>
+    <div class="about-grid">
+      <div class="about-card"><div class="about-card-icon">✨</div><h3 data-i18n="about-c1-title">Our Vision</h3><p data-i18n="about-c1-body">To create accessible, culturally-rich fashion that celebrates Singapore's diverse heritage while embracing global trends. Every piece tells a story of identity and aspiration.</p></div>
+      <div class="about-card"><div class="about-card-icon">🎓</div><h3 data-i18n="about-c2-title">Student-Led</h3><p data-i18n="about-c2-body">Designed, curated, and launched by Year 1 students at Singapore Polytechnic. LYRA is our collective first chapter — and we're just getting started.</p></div>
+      <div class="about-card"><div class="about-card-icon">🌏</div><h3 data-i18n="about-c3-title">Made for Everyone</h3><p data-i18n="about-c3-body">We design for all sizes, all genders, and all cultures. Our collections are inclusive by design — because fashion should never have a gate at its door.</p></div>
+      <div class="about-card"><div class="about-card-icon">🟠</div><h3>Orange Box Collab</h3><p>All our tees are produced with Singapore Orange Box using premium DTF printing on dri-fit polyester — durable, vivid, and made to last through every wash.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ CONTACT PAGE ══════════ -->
+<div id="page-contact" class="page-section">
+  <div class="section-header">
+    <span class="section-label" data-i18n="contact-label">Get In Touch</span>
+    <h2 class="section-title" data-i18n="contact-title">Contact Us</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="page-inner" style="padding-top:0">
+    <div class="contact-info-grid">
+      <div class="contact-info-card"><div class="icon">📍</div><h4>Location</h4><p>Singapore Polytechnic<br>500 Dover Road, S139651</p></div>
+      <div class="contact-info-card"><div class="icon">✉️</div><h4>Email</h4><p>hello@lyra.sg<br>support@lyra.sg</p></div>
+      <div class="contact-info-card"><div class="icon">📱</div><h4>Social</h4><p>@lyra.official<br>Instagram & TikTok</p></div>
+    </div>
+    <div class="contact-form">
+      <div class="form-row">
+        <div class="form-group"><label data-i18n="cf-name">Your Name</label><input class="form-input" type="text" placeholder="Jane Tan"></div>
+        <div class="form-group"><label data-i18n="cf-email">Email Address</label><input class="form-input" type="email" placeholder="jane@email.com"></div>
+      </div>
+      <div class="form-group"><label data-i18n="cf-subject">Subject</label><input class="form-input" type="text" placeholder="Order enquiry, sizing, collaboration..."></div>
+      <div class="form-group"><label data-i18n="cf-message">Message</label><textarea class="form-input" placeholder="Tell us anything..."></textarea></div>
+      <button class="btn-login" onclick="sendContact()" data-i18n="cf-send">Send Message</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-logo">LYRA</div>
+      <p class="footer-desc" data-i18n="footer-desc">A Singapore Polytechnic Year 1 fashion label. DTF printed by Singapore Orange Box. Wear the Stars.</p>
+    </div>
+    <div class="footer-col"><h4>Shop</h4><ul><li><a onclick="showPage('catalogue')">All Designs</a></li><li><a onclick="showPage('catalogue')">Holographic Stars</a></li><li><a onclick="showPage('catalogue')">Rise Above</a></li><li><a onclick="showPage('catalogue')">Love Tees</a></li></ul></div>
+    <div class="footer-col"><h4>Info</h4><ul><li><a onclick="showPage('about')">About Us</a></li><li><a onclick="showPage('contact')">Contact</a></li><li><a>Sizing Guide</a></li><li><a>Returns</a></li></ul></div>
+    <div class="footer-col"><h4>Account</h4><ul><li><a onclick="openLogin()">Sign In</a></li><li><a onclick="openLogin()">Register</a></li><li><a onclick="openOrders()">My Orders</a></li><li><a onclick="openWishlist()">Wishlist</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 LYRA. Singapore Polytechnic Year 1 Project. In partnership with Singapore Orange Box.</span>
+    <span>All rights reserved.</span>
+  </div>
+</footer>
+
+<!-- ══ MODALS ══ -->
+<!-- CART -->
+<div class="modal-overlay" id="cart-modal">
+  <div class="modal modal-wide">
+    <div class="modal-head"><span class="modal-title">Shopping Cart 🛒</span><button class="modal-close" onclick="closeModal('cart-modal')">✕</button></div>
+    <div class="modal-body" id="cart-body"></div>
+  </div>
+</div>
+
+<!-- WISHLIST -->
+<div class="modal-overlay" id="wishlist-modal">
+  <div class="modal modal-wide">
+    <div class="modal-head"><span class="modal-title">My Wishlist 🤍</span><button class="modal-close" onclick="closeModal('wishlist-modal')">✕</button></div>
+    <div class="modal-body" id="wishlist-body"></div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="login-modal-title">Sign In</span><button class="modal-close" onclick="closeModal('login-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="login-error" id="login-error">Incorrect credentials. Try: demo@lyra.sg / lyra2025</div>
+      <div class="login-form" id="login-form-el">
+        <div class="form-group"><label>Email Address</label><input class="form-input" type="email" id="login-email" placeholder="demo@lyra.sg"></div>
+        <div class="form-group"><label>Password</label><input class="form-input" type="password" id="login-pw" placeholder="••••••••"></div>
+        <button class="btn-login" onclick="doLogin()">Sign In</button>
+        <div class="login-switch">Don't have an account? <span onclick="switchToSignup()">Register</span></div>
+      </div>
+      <div class="login-form" id="signup-form-el" style="display:none">
+        <div class="form-group"><label>Full Name</label><input class="form-input" type="text" id="signup-name" placeholder="Your name"></div>
+        <div class="form-group"><label>Email</label><input class="form-input" type="email" id="signup-email" placeholder="you@email.com"></div>
+        <div class="form-group"><label>Password</label><input class="form-input" type="password" id="signup-pw" placeholder="Create a password"></div>
+        <button class="btn-login" onclick="doSignup()">Create Account</button>
+        <div class="login-switch">Already have an account? <span onclick="switchToLogin()">Sign In</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDERS -->
+<div class="modal-overlay" id="orders-modal">
+  <div class="modal modal-wide">
+    <div class="modal-head"><span class="modal-title">My Orders 📦</span><button class="modal-close" onclick="closeModal('orders-modal')">✕</button></div>
+    <div class="modal-body" id="orders-body"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+/* ─── CUSTOM CURSOR ─── */
+const cursor = document.getElementById('cursor');
+const cursorTrail = document.getElementById('cursor-trail');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+  setTimeout(() => {
+    cursorTrail.style.left = e.clientX + 'px';
+    cursorTrail.style.top = e.clientY + 'px';
+  }, 80);
+});
+
+/* ─── CLICK STAR BURST ─── */
+document.addEventListener('click', e => {
+  if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select') || e.target.closest('input') || e.target.closest('textarea')) return;
+  const stars = ['✦','★','✧','✶','⋆','✹'];
+  for (let i = 0; i < 5; i++) {
+    const el = document.createElement('div');
+    el.className = 'star-burst';
+    el.textContent = stars[Math.floor(Math.random()*stars.length)];
+    el.style.cssText = `left:${e.clientX + (Math.random()-0.5)*60}px;top:${e.clientY + (Math.random()-0.5)*60}px;color:${Math.random()>0.5?'#C8181E':'#C9A840'};`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 700);
+  }
+});
+
+/* ─── HOLOGRAPHIC STAR CANVAS ─── */
+(function(){
+  const canvas = document.getElementById('star-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, stars = [];
+  const N = 180;
+  const holoColors = ['#ff6b8a','#ff9f7f','#ffe06b','#8bffb0','#6bf0ff','#a67bff','#ff7bd6','#fff','#ffccdd','#ccf0ff','#C8181E','#E8A000'];
+
+  class Star {
+    constructor(){ this.reset(true); }
+    reset(init){
+      this.x = (Math.random()-0.5)*W;
+      this.y = (Math.random()-0.5)*H;
+      this.z = init ? Math.random()*W : W;
+      this.pz = this.z;
+      this.size = Math.random()*3+0.8;
+      this.angle = Math.random()*Math.PI*2;
+      this.angleSpeed = (Math.random()-0.5)*0.07;
+      this.hue = Math.floor(Math.random()*holoColors.length);
+      this.speed = Math.random()*1.2+0.4;
+      this.twinkle = Math.random()*Math.PI*2;
+      this.arms = Math.floor(Math.random()*3)+4;
+      this.shape = Math.random() > 0.6 ? 'cross' : 'star';
+    }
+    update(){
+      this.pz = this.z;
+      this.z -= this.speed;
+      this.angle += this.angleSpeed;
+      this.twinkle += 0.07;
+      if(this.z <= 0) this.reset(false);
+    }
+    draw(){
+      const sx = (this.x/this.z)*W*0.5 + W*0.5;
+      const sy = (this.y/this.z)*H*0.5 + H*0.5;
+      const r = Math.max(0.3,(1-this.z/W)*this.size*4.5);
+      const alpha = (1-this.z/W)*(0.55+0.45*Math.sin(this.twinkle));
+      const col = holoColors[this.hue];
+      ctx.save();
+      ctx.translate(sx, sy);
+      ctx.rotate(this.angle);
+      ctx.globalAlpha = alpha*0.6;
+      // Glow
+      const g = ctx.createRadialGradient(0,0,0,0,0,r*5);
+      g.addColorStop(0,col); g.addColorStop(0.5,col+'55'); g.addColorStop(1,'transparent');
+      ctx.beginPath(); ctx.arc(0,0,r*5,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+      // Shape
+      ctx.globalAlpha = alpha;
+      ctx.shadowBlur = 12; ctx.shadowColor = col;
+      if(this.shape === 'cross'){
+        ctx.fillStyle=col;
+        ctx.fillRect(-r*0.4,-r*2.5,r*0.8,r*5);
+        ctx.fillRect(-r*2.5,-r*0.4,r*5,r*0.8);
+      } else {
+        ctx.beginPath();
+        const arms = this.arms;
+        for(let i=0;i<arms*2;i++){
+          const a=(Math.PI/arms)*i;
+          const rad = i%2===0?r*3:r*1.2;
+          if(i===0) ctx.moveTo(Math.cos(a)*rad,Math.sin(a)*rad);
+          else ctx.lineTo(Math.cos(a)*rad,Math.sin(a)*rad);
+        }
+        ctx.closePath(); ctx.fillStyle=col; ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+
+  function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+  function init(){ resize(); stars=Array.from({length:N},()=>new Star()); }
+  function loop(){ ctx.clearRect(0,0,W,H); stars.forEach(s=>{s.update();s.draw();}); requestAnimationFrame(loop); }
+  window.addEventListener('resize',resize);
+  init(); loop();
+})();
+
+/* ─── PRODUCT DATA ─── */
+// T-shirt designs from the PDF
+const products = [
+  // Holographic Stars series (pages 1-3)
+  {id:1, name:'Nebula Tee — Holo Stars', sub:'Holographic star burst back print', price:20, cat:['holographic','white'], tags:['New'], colors:['#ffffff','#220033','#111111'],
+   tshirtColor:'#f5f5f5', back:'🌟', front:'✨',
+   desc:'White dri-fit tee featuring swirling holographic red 3D stars on the back with a subtle star accent on the front chest.'},
+  {id:2, name:'Nebula Tee — Holo Stars (Purple)', sub:'Holographic star burst back print', price:20, cat:['holographic','navy'], tags:['New'], colors:['#3A0080','#111111','#ffffff'],
+   tshirtColor:'#3A0080', back:'🌟', front:'✨',
+   desc:'Deep purple dri-fit tee with holographic red stars cascading across the back — bold and cosmic.'},
+  {id:3, name:'Nebula Tee — Holo Stars (Black)', sub:'Holographic star burst back print', price:20, cat:['holographic','black'], tags:['Popular'], colors:['#111111','#3A0080','#f5f5f5'],
+   tshirtColor:'#111111', back:'🌟', front:'✨',
+   desc:'Sleek black dri-fit with vivid holographic star graphics that pop dramatically against the dark fabric.'},
+
+  // LYRA star character series (pages 4-7)
+  {id:4, name:'Star Character Tee — White', sub:'L.Y.R.A star mascot + celestial back', price:20, cat:['white'], tags:['New'], colors:['#f5f5f5','#111111'],
+   tshirtColor:'#f5f5f5', back:'⭐', front:'🌟',
+   desc:'White tee with the LYRA kawaii star character on the front and an expressive star galaxy motif on the back.'},
+  {id:5, name:'Star Character Tee — Black', sub:'L.Y.R.A star mascot + celestial back', price:20, cat:['black'], tags:['Popular'], colors:['#111111','#f5f5f5'],
+   tshirtColor:'#111111', back:'⭐', front:'🌟',
+   desc:'Black dri-fit with the LYRA star character and swirling celestial artwork on the back.'},
+
+  // Winged Star series (@bums / pages 6-7)
+  {id:6, name:'"Angel Star" Tee — White', sub:'Winged star graphic, soft glow back print', price:20, cat:['white'], tags:['Exclusive'], colors:['#f5f5f5','#111111'],
+   tshirtColor:'#f5f5f5', back:'🪽', front:'⭐',
+   desc:'White tee featuring an angelic winged star with intricate scroll-work and a soft pink glow — ethereal and bold.'},
+  {id:7, name:'"Angel Star" Tee — Black', sub:'Winged star graphic, neon glow back print', price:20, cat:['black'], tags:['Exclusive'], colors:['#111111','#f5f5f5'],
+   tshirtColor:'#111111', back:'🪽', front:'⭐',
+   desc:'Black dri-fit with the neon-glow winged star graphic, creating a striking cosmic angel aesthetic.'},
+
+  // Rise Above series (pages 8-10)
+  {id:8, name:'"Rise Above" Tee — White', sub:'Bold typography + shooting star graphic', price:20, cat:['rise','white'], tags:['New','Trending'], colors:['#f5f5f5','#111111','#3A0080'],
+   tshirtColor:'#f5f5f5', back:'⚡', front:'⭐',
+   desc:'White dri-fit with the statement "RISE ABOVE" in bold distressed type wrapping a shooting star with spirograph wave patterns.'},
+  {id:9, name:'"Rise Above" Tee — Black', sub:'Bold typography + shooting star graphic', price:20, cat:['rise','black'], tags:['Trending'], colors:['#111111','#f5f5f5','#3A0080'],
+   tshirtColor:'#111111', back:'⚡', front:'⭐',
+   desc:'Black edition of the Rise Above tee — the white typography and gold shooting star hit even harder on the dark base.'},
+  {id:10, name:'"Rise Above" Tee — Navy', sub:'Bold typography + shooting star graphic', price:20, cat:['rise','navy'], tags:[], colors:['#1a1a6e','#f5f5f5','#111111'],
+   tshirtColor:'#1a1a6e', back:'⚡', front:'⭐',
+   desc:'Navy blue edition — a refined, collegiate-feel colourway for the Rise Above design.'},
+
+  // Star outline sewn (pages 11-14)
+  {id:11, name:'Star Outline Tee — White', sub:'Fabric overlay star + sewn buttons', price:20, cat:['white'], tags:['Handcrafted'], colors:['#f5f5f5','#111111','#c9b080'],
+   tshirtColor:'#f5f5f5', back:'✶', front:'⭐',
+   desc:'White dri-fit with a fabric-layer star outline on the back — actual buttons sewn along the star path for a tactile, fashion-forward detail.'},
+  {id:12, name:'Star Outline Tee — Black', sub:'Fabric overlay star + sewn buttons', price:20, cat:['black','handcrafted'], tags:['Handcrafted'], colors:['#111111','#f5f5f5'],
+   tshirtColor:'#111111', back:'✶', front:'⭐',
+   desc:'Black edition with white-outline star and button detail — minimalist yet striking.'},
+
+  // Love series (pages 18-20)
+  {id:13, name:'"LOVE" Chrome Tee — White', sub:'3D chrome balloon letters on back', price:20, cat:['love','white'], tags:['New'], colors:['#f5f5f5','#111111','#3A0080'],
+   tshirtColor:'#f5f5f5', back:'💿', front:'⭐',
+   desc:'White tee featuring chrome 3D balloon "L♾VE" letters across the upper back — Y2K-inspired and iconic.'},
+  {id:14, name:'"LOVE" Chrome Tee — Black', sub:'3D chrome balloon letters on back', price:20, cat:['love','black'], tags:['Popular'], colors:['#111111','#f5f5f5'],
+   tshirtColor:'#111111', back:'💿', front:'⭐',
+   desc:'Black edition — the silver chrome LOVE lettering against black is a statement you can see from across the room.'},
+  {id:15, name:'"LOVE" Chrome Tee — Navy', sub:'3D chrome balloon letters on back', price:20, cat:['love','navy'], tags:[], colors:['#3A0080','#f5f5f5'],
+   tshirtColor:'#3A0080', back:'💿', front:'⭐',
+   desc:'Deep purple/navy edition of the chrome LOVE tee.'},
+
+  // Button trail (pages 15-17)
+  {id:16, name:'Button Trail Tee — White', sub:'Comet trail + sewn button detail', price:20, cat:['white','handcrafted'], tags:['Handcrafted'], colors:['#f5f5f5','#111111','#3A0080'],
+   tshirtColor:'#f5f5f5', back:'🌠', front:'⭐',
+   desc:'White dri-fit where buttons are sewn along a curved comet-trail path from the shoulder to the chest star graphic — part clothing, part art.'},
+  {id:17, name:'Button Trail Tee — Black', sub:'Comet trail + sewn button detail', price:20, cat:['black','handcrafted'], tags:['Handcrafted'], colors:['#111111','#f5f5f5'],
+   tshirtColor:'#111111', back:'🌠', front:'⭐',
+   desc:'Black edition of the button trail tee — dark fabric makes the trail of buttons feel like stars in the night sky.'},
+];
+
+let cart = {};
+let wishlist = new Set();
+let currentUser = null;
+let currentLang = 'en';
+let signedUpUsers = {'demo@lyra.sg':{pw:'lyra2025',name:'Demo User'}};
+
+const mockOrders = [
+  {id:'#LYR-0041', date:'12 May 2025', items:'Rise Above Tee (Black) × 1, LOVE Chrome Tee (White) × 2', total:'SGD $60.00', status:'delivered'},
+  {id:'#LYR-0038', date:'3 May 2025', items:'Nebula Holo Tee (Black) × 1', total:'SGD $20.00', status:'shipped'},
+  {id:'#LYR-0029', date:'18 Apr 2025', items:'Angel Star Tee × 1, Button Trail Tee × 1', total:'SGD $40.00', status:'delivered'},
+];
+
+/* ─── T-SHIRT SVG ─── */
+function tshirtSVG(color, frontEmoji, backEmoji, designId) {
+  const isDark = ['#111111','#3A0080','#1a1a6e'].includes(color);
+  const outline = isDark ? '#333' : '#ccc';
+  const textColor = isDark ? '#fff' : '#333';
+  return `
+  <svg class="tshirt-svg" viewBox="0 0 300 280" xmlns="http://www.w3.org/2000/svg">
+    <!-- Shadow -->
+    <ellipse cx="150" cy="272" rx="90" ry="8" fill="rgba(0,0,0,0.1)"/>
+    <!-- Body -->
+    <path d="M75 55 L35 100 L65 115 L65 250 L235 250 L235 115 L265 100 L225 55 C210 58 190 65 150 65 C110 65 90 58 75 55Z"
+      fill="${color}" stroke="${outline}" stroke-width="2" stroke-linejoin="round"/>
+    <!-- Left sleeve -->
+    <path d="M75 55 L30 95 L62 110 L75 75Z" fill="${color}" stroke="${outline}" stroke-width="2" stroke-linejoin="round"/>
+    <!-- Right sleeve -->
+    <path d="M225 55 L270 95 L238 110 L225 75Z" fill="${color}" stroke="${outline}" stroke-width="2" stroke-linejoin="round"/>
+    <!-- Collar -->
+    <path d="M115 65 Q150 80 185 65" fill="none" stroke="${outline}" stroke-width="2.5"/>
+    <!-- Front chest design -->
+    <text x="128" y="125" font-size="22" text-anchor="middle">${frontEmoji}</text>
+    <!-- Back center design (shown as faded overlay) -->
+    <text x="150" y="180" font-size="42" text-anchor="middle" opacity="0.6">${backEmoji}</text>
+    <!-- LYRA watermark -->
+    <text x="150" y="240" font-size="7" text-anchor="middle" fill="${textColor}" opacity="0.35" font-family="serif" letter-spacing="3">L.Y.R.A</text>
+    <!-- Hem line -->
+    <line x1="65" y1="245" x2="235" y2="245" stroke="${outline}" stroke-width="1.5" opacity="0.5"/>
+  </svg>`;
+}
+
+/* ─── RENDER PRODUCTS ─── */
+function productCardHTML(p) {
+  const inWish = wishlist.has(p.id);
+  const colorDots = p.colors.map((c,i)=>`<div class="color-dot ${i===0?'active':''}" style="background:${c}" title="${c}" onclick="changeCardColor(${p.id},'${c}',this)"></div>`).join('');
+  const tags = p.tags.map(t=>`<span style="margin-right:6px">${t}</span>`).join('');
+  return `
+  <div class="product-card" id="pcard-${p.id}">
+    <div class="tshirt-preview" id="tshirt-${p.id}">
+      ${tshirtSVG(p.tshirtColor, p.front, p.back, p.id)}
+    </div>
+    <div class="product-info">
+      ${tags ? `<div class="product-tag">${tags}</div>` : ''}
+      <div class="product-name">${p.name}</div>
+      <div class="product-sub">${p.sub}</div>
+      <div style="font-size:0.78rem;color:var(--text-mid);font-family:'Times New Roman',serif;margin-bottom:8px;line-height:1.5;">${p.desc}</div>
+      <div class="color-dots">${colorDots}</div>
+      <div class="product-price">SGD $${p.price}</div>
+      <div style="font-size:0.68rem;color:var(--text-mid);font-family:'Times New Roman',serif;letter-spacing:0.1em;margin-bottom:8px;">DRYFIT · DTF PRINT · ORANGE BOX</div>
+      <div class="product-actions">
+        <button class="btn-cart" onclick="addToCart(${p.id})">Add to Cart</button>
+        <button class="btn-wish ${inWish?'wishlisted':''}" id="wish-btn-${p.id}" onclick="toggleWishlist(${p.id})">${inWish?'❤️':'🤍'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function changeCardColor(id, color, dot) {
+  dot.closest('.color-dots').querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));
+  dot.classList.add('active');
+  const p = products.find(x=>x.id===id);
+  const preview = document.getElementById(`tshirt-${id}`);
+  if(preview) preview.innerHTML = tshirtSVG(color, p.front, p.back, id);
+}
+
+function renderGrid(containerId, items) {
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  el.innerHTML = items.map(productCardHTML).join('');
+}
+function renderFeatured(){ renderGrid('featured-grid', products.slice(0,8)); }
+function renderCatalogue(cat='all'){
+  const items = cat==='all' ? products : products.filter(p=>p.cat.includes(cat));
+  renderGrid('catalogue-grid', items);
+}
+
+/* ─── TICKER ─── */
+function buildTicker(){
+  const msgs = ['Dri-Fit Tees · SGD $20 Each','DTF Print by Singapore Orange Box','All Designs by SP Year 1 Students','Wear the Stars · Rise Above','L.Y.R.A · Singapore Polytechnic','Holographic Stars · Love · Rise Above'];
+  const full = [...msgs,...msgs].map(m=>`<span class="ticker-item">${m}</span>`).join('');
+  document.getElementById('ticker-inner').innerHTML = full+full;
+}
+
+/* ─── PAGES ─── */
+function showPage(page){
+  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));
+  const el = document.getElementById('nav-'+page);
+  if(el) el.classList.add('active');
+  if(page==='catalogue') renderCatalogue();
+  window.scrollTo(0,0);
+}
+
+function filterCat(cat,btn){
+  document.querySelectorAll('.cat-filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCatalogue(cat);
+}
+
+/* ─── CART ─── */
+function addToCart(id){
+  const p=products.find(x=>x.id===id);
+  if(!cart[id]) cart[id]={...p,qty:0};
+  cart[id].qty++;
+  updateBadges();
+  showToast(`${p.front} ${p.name} added to cart!`);
+}
+function removeFromCart(id){ delete cart[id]; updateBadges(); renderCart(); }
+function changeQty(id,delta){
+  if(!cart[id]) return;
+  cart[id].qty+=delta;
+  if(cart[id].qty<=0) delete cart[id];
+  updateBadges(); renderCart();
+}
+function openCart(){ renderCart(); openModal('cart-modal'); }
+function renderCart(){
+  const items=Object.values(cart);
+  const body=document.getElementById('cart-body');
+  if(!items.length){ body.innerHTML=`<div class="empty-state"><div class="empty-icon">🛒</div><p>Your cart is empty.</p></div>`; return; }
+  const total=items.reduce((s,i)=>s+i.price*i.qty,0);
+  body.innerHTML=items.map(i=>`
+    <div class="cart-item">
+      <div class="cart-item-emoji">${i.front}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${i.name}</div>
+        <div class="cart-item-sub">${i.sub}</div>
+        <div class="cart-item-price">SGD $${i.price}</div>
+      </div>
+      <div class="cart-item-qty">
+        <button class="qty-btn" onclick="changeQty(${i.id},-1)">−</button>
+        <span class="qty-num">${i.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${i.id},1)">+</button>
+        <button class="qty-btn" onclick="removeFromCart(${i.id})" style="color:var(--red);margin-left:4px">🗑</button>
+      </div>
+    </div>`).join('')+
+    `<div class="cart-total"><span class="cart-total-label">Total</span><span class="cart-total-price">SGD $${total.toFixed(2)}</span></div>
+     <button class="btn-checkout" onclick="checkout()">Checkout ///</button>`;
+}
+function checkout(){
+  if(!currentUser){ closeModal('cart-modal'); openLogin(); showToast('Please sign in to checkout.'); return; }
+  cart={}; updateBadges(); closeModal('cart-modal'); showToast('Order placed! Thank you ✨');
+}
+
+/* ─── WISHLIST ─── */
+function toggleWishlist(id){
+  if(wishlist.has(id)){ wishlist.delete(id); showToast('Removed from wishlist'); }
+  else { wishlist.add(id); showToast('Added to wishlist ❤️'); }
+  const btn=document.getElementById(`wish-btn-${id}`);
+  if(btn){ btn.textContent=wishlist.has(id)?'❤️':'🤍'; btn.classList.toggle('wishlisted',wishlist.has(id)); }
+  updateBadges();
+}
+function openWishlist(){
+  const body=document.getElementById('wishlist-body');
+  if(!wishlist.size){ body.innerHTML=`<div class="empty-state"><div class="empty-icon">🤍</div><p>Your wishlist is empty.</p></div>`; }
+  else {
+    const items=products.filter(p=>wishlist.has(p.id));
+    body.innerHTML=items.map(p=>`
+      <div class="cart-item">
+        <div class="cart-item-emoji">${p.front}</div>
+        <div class="cart-item-info"><div class="cart-item-name">${p.name}</div><div class="cart-item-sub">${p.sub}</div><div class="cart-item-price">SGD $${p.price}</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-cart" style="padding:8px 14px;font-size:0.75rem" onclick="addToCart(${p.id})">Add to Cart</button>
+          <button class="qty-btn" onclick="toggleWishlist(${p.id});openWishlist()" style="color:var(--red);width:auto;padding:0 8px;font-size:0.7rem">Remove</button>
+        </div>
+      </div>`).join('');
+  }
+  openModal('wishlist-modal');
+}
+
+function updateBadges(){
+  const cc=Object.values(cart).reduce((s,i)=>s+i.qty,0);
+  const wc=wishlist.size;
+  const cb=document.getElementById('cart-badge'),wb=document.getElementById('wish-badge');
+  cb.style.display=cc?'flex':'none'; cb.textContent=cc;
+  wb.style.display=wc?'flex':'none'; wb.textContent=wc;
+}
+
+/* ─── LOGIN ─── */
+function openLogin(){ openModal('login-modal'); }
+function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pw=document.getElementById('login-pw').value;
+  const err=document.getElementById('login-error');
+  if(signedUpUsers[email]&&signedUpUsers[email].pw===pw){
+    currentUser={email,name:signedUpUsers[email].name};
+    closeModal('login-modal'); updateLoginBtn(); showToast(`Welcome back, ${currentUser.name}! ✨`);
+  } else { err.style.display='block'; }
+}
+function doSignup(){
+  const name=document.getElementById('signup-name').value.trim();
+  const email=document.getElementById('signup-email').value.trim();
+  const pw=document.getElementById('signup-pw').value;
+  if(!name||!email||!pw){showToast('Please fill all fields.');return;}
+  signedUpUsers[email]={pw,name};
+  currentUser={email,name};
+  closeModal('login-modal'); updateLoginBtn(); showToast(`Welcome to LYRA, ${name}! ✨`);
+}
+function switchToSignup(){
+  document.getElementById('login-form-el').style.display='none';
+  document.getElementById('signup-form-el').style.display='flex';
+  document.getElementById('login-modal-title').textContent='Create Account';
+  document.getElementById('login-error').style.display='none';
+}
+function switchToLogin(){
+  document.getElementById('login-form-el').style.display='flex';
+  document.getElementById('signup-form-el').style.display='none';
+  document.getElementById('login-modal-title').textContent='Sign In';
+}
+function updateLoginBtn(){
+  const btn=document.getElementById('login-nav-btn');
+  if(currentUser){
+    btn.textContent=currentUser.name.split(' ')[0];
+    btn.onclick=()=>{if(confirm('Sign out?')){currentUser=null;btn.textContent='Sign In';btn.onclick=openLogin;showToast('Signed out!');}}
+  }
+}
+
+/* ─── ORDERS ─── */
+function openOrders(){
+  if(!currentUser){openLogin();showToast('Please sign in to view orders.');return;}
+  const body=document.getElementById('orders-body');
+  body.innerHTML=mockOrders.map(o=>`
+    <div class="order-card">
+      <div class="order-header">
+        <div><div class="order-id">${o.id}</div><div class="order-date">${o.date}</div></div>
+        <span class="order-status status-${o.status}">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span>
+      </div>
+      <div class="order-items">${o.items}</div>
+      <div class="order-total">${o.total}</div>
+    </div>`).join('');
+  openModal('orders-modal');
+}
+
+/* ─── CONTACT ─── */
+function sendContact(){ showToast("Message sent! We'll reply within 24h 📩"); }
+
+/* ─── MODALS ─── */
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+/* ─── TOAST ─── */
+let toastT;
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+/* ─── I18N (abbreviated — same structure as before) ─── */
+const i18n = {
+  en:{'hero-sub':'Singapore Polytechnic · Year 1 Collection','hero-tagline':'Wear the Stars. Rise Above.','hero-cta':'Shop Now ///','featured-label':'New Arrivals','featured-title':'Featured Pieces','cat-label':'Our Collection','cat-title':'Full Catalogue','about-label':'Who We Are','about-title':'About LYRA','about-desc':'LYRA is a student-led fashion label born at Singapore Polytechnic, created by passionate Year 1 students who believe that style is a language everyone speaks.','about-c1-title':'Our Vision','about-c1-body':'To create accessible, culturally-rich fashion celebrating Singapore\'s diverse heritage.','about-c2-title':'Student-Led','about-c2-body':'Designed and launched by Year 1 SP students. Our first chapter — and we\'re just getting started.','about-c3-title':'For Everyone','about-c3-body':'We design for all sizes, all genders, and all cultures. Fashion with no gate.','contact-label':'Get In Touch','contact-title':'Contact Us','cf-name':'Your Name','cf-email':'Email Address','cf-subject':'Subject','cf-message':'Message','cf-send':'Send Message','login-title':'Sign In','stat-designs':'Designs','stat-colors':'Colourways','stat-print':'Print Tech','footer-desc':'A Singapore Polytechnic Year 1 fashion label. DTF printed by Singapore Orange Box. Wear the Stars.','nav-home':'Home','nav-cat':'Catalogue','nav-about':'About Us','nav-contact':'Contact','nav-orders':'My Orders'},
+  zh:{'hero-sub':'新加坡理工学院 · 一年级系列','hero-tagline':'穿上星光，超越自我。','hero-cta':'立即购买 ///','featured-label':'新品上架','featured-title':'精选单品','cat-label':'我们的系列','cat-title':'完整目录','about-label':'关于我们','about-title':'关于 LYRA','contact-label':'联系我们','contact-title':'联系我们','cf-name':'您的姓名','cf-email':'电子邮件','cf-subject':'主题','cf-message':'留言','cf-send':'发送消息','login-title':'登录','stat-designs':'款式','stat-colors':'色彩','stat-print':'印刷技术','footer-desc':'新加坡理工学院一年级时尚品牌。穿上星光。','nav-home':'主页','nav-cat':'目录','nav-about':'关于我们','nav-contact':'联系我们','nav-orders':'我的订单'},
+  ms:{'hero-sub':'Politeknik Singapura · Koleksi Tahun 1','hero-tagline':'Pakai Bintang. Naik ke Atas.','hero-cta':'Beli Sekarang ///','featured-label':'Ketibaan Baru','featured-title':'Pilihan Utama','cat-label':'Koleksi Kami','cat-title':'Katalog Penuh','about-label':'Siapa Kami','about-title':'Tentang LYRA','contact-label':'Hubungi Kami','contact-title':'Hubungi Kami','cf-name':'Nama Anda','cf-email':'E-mel','cf-subject':'Subjek','cf-message':'Mesej','cf-send':'Hantar','login-title':'Log Masuk','stat-designs':'Reka Bentuk','stat-colors':'Warna','stat-print':'Teknologi Cetak','footer-desc':'Jenama fesyen Tahun 1 Politeknik Singapura.','nav-home':'Utama','nav-cat':'Katalog','nav-about':'Tentang Kami','nav-contact':'Hubungi','nav-orders':'Pesanan Saya'},
+  fr:{'hero-sub':'Polytechnique de Singapour · Collection Année 1','hero-tagline':'Portez les Étoiles. Élévez-vous.','hero-cta':'Acheter Maintenant ///','featured-label':'Nouveautés','featured-title':'Pièces Vedettes','cat-label':'Notre Collection','cat-title':'Catalogue Complet','about-label':'Qui Sommes-Nous','about-title':'À Propos de LYRA','contact-label':'Contactez-Nous','contact-title':'Contactez-Nous','cf-name':'Votre Nom','cf-email':'E-mail','cf-subject':'Sujet','cf-message':'Message','cf-send':'Envoyer','login-title':'Se Connecter','stat-designs':'Designs','stat-colors':'Coloris','stat-print':'Technique','footer-desc':'Une marque de mode étudiante du Polytechnique de Singapour.','nav-home':'Accueil','nav-cat':'Catalogue','nav-about':'À Propos','nav-contact':'Contact','nav-orders':'Mes Commandes'},
+};
+// fill missing langs with en
+['es','de','ru','ta'].forEach(l => { i18n[l] = i18n.en; });
+
+function setLanguage(lang){
+  currentLang=lang;
+  const t=i18n[lang]||i18n.en;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    if(t[k]!==undefined) el.innerHTML=t[k];
+  });
+}
+
+/* ─── INIT ─── */
+renderFeatured();
+renderCatalogue();
+buildTicker();
+</script>
+</body>
+</html>
